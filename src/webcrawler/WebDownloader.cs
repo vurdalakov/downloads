@@ -29,6 +29,8 @@
         {
             Tracer.Trace("Download headers '{0}'", url);
 
+            Delay();
+
             var rawHeaders = _webClient.DownloadHeaders(url);
 
             Tracer.Trace(rawHeaders);
@@ -116,9 +118,10 @@
             return encoding.GetString(buffer, bom.Length, buffer.Length - bom.Length);
         }
 
-        public void DownloadFile(String url, String fileName)
+        public WebHeaders DownloadFile(String url, String fileName)
         {
             _webClient.DownloadFile(url, fileName);
+            return new WebHeaders(_webClient.Response.Headers);
         }
 
         private String UrlToCacheFileName(String url)

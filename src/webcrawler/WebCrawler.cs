@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text.RegularExpressions;
 
-    public class WebCrawler : WebDownloader, IDisposable
+    public class WebCrawler : WebDownloader
     {
         FileDatabase _fileDatabase;
         String _baseDirectory;
@@ -44,23 +44,8 @@
         public void AddFile(String url, String fileName)
         {
             Tracer.Trace("Adding '{0}'", url);
-            var httpHeaders = DownloadHeaders(url);
 
-            var fileRecord = _fileDatabase.GetFile(url);
-            if (fileRecord != null)
-            {
-                Tracer.Trace("Already in database");
-
-                if ((fileRecord.Modified < httpHeaders.LastModified) || (fileRecord.Size != httpHeaders.ContentLength))
-                {
-                    Tracer.Trace("Is out-of-date");
-                    fileRecord.OutOfDate = true;
-                }
-            }
-            else
-            {
-                fileRecord = new FileDatabaseRecord(url, fileName, httpHeaders.LastModified, httpHeaders.ContentLength, httpHeaders.ContentType);
-            }
+            var fileRecord = new FileDatabaseRecord(url, fileName);
 
             _fileDatabase.AddOrReplaceFile(fileRecord);
         }
@@ -77,41 +62,21 @@
 
             var tempFileName = Path.Combine(_tempDirectory, fileRecord.FileName.Replace('\\', '_'));
 
-            //DownloadFile(url, tempFileName);
+            var webHeaders = DownloadFile(url, tempFileName);
 
-            //var fileName = Path.Combine(_baseDirectory, fileRecord.FileName);
-            //EnsureDirectoryExists(Path.GetDirectoryName(fileName));
+            if (webHeaders.ContentLength != new FileInfo(tempFileName).Length)
+            {
+                throw new Exception("Wrong file size");
+            }
 
-            //File.Move(tempFileName, fileName);
+            var fileName = Path.Combine(_baseDirectory, fileRecord.FileName);
+            EnsureDirectoryExists(Path.GetDirectoryName(fileName));
 
-            fileRecord.Available = true;
-            fileRecord.OutOfDate = false;
+            File.Move(tempFileName, fileName);
+            File.SetLastWriteTimeUtc(fileName, webHeaders.LastModified);
+
+            fileRecord.Modify(webHeaders.LastModified, webHeaders.ContentLength, webHeaders.ContentType, "", true, false);
             _fileDatabase.AddOrReplaceFile(fileRecord);
         }
-
-        #region IDisposable Support
-
-        private bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    _fileDatabase.Dispose();
-                    _fileDatabase = null;
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        #endregion
     }
 }

@@ -37,77 +37,73 @@
 
         static private void PrintInfo(String fileName)
         {
-            using (FileDatabase fileDatabase = new FileDatabase(fileName))
+            var fileDatabase = new FileDatabase(fileName);
+
+            int count = fileDatabase.GetFileCount();
+            int available = 0;
+            int outOfDate = 0;
+
+            for (var i = 0; i < count; i++)
             {
-                int count = fileDatabase.GetFileCount();
-                int available = 0;
-                int outOfDate = 0;
+                var fileDatabaseRecord = fileDatabase.GetFile(i);
 
-                for (var i = 0; i < count; i++)
+                if (fileDatabaseRecord.Available)
                 {
-                    var fileDatabaseRecord = fileDatabase.GetFile(i);
+                    available++;
 
-                    if (fileDatabaseRecord.Available)
+                    if (fileDatabaseRecord.OutOfDate)
                     {
-                        available++;
-
-                        if (fileDatabaseRecord.OutOfDate)
-                        {
-                            outOfDate++;
-                        }
+                        outOfDate++;
                     }
                 }
-
-                Console.WriteLine("Total files:       {0}", count);
-                Console.WriteLine("Available files:   {0}", available);
-                Console.WriteLine("Up-to-date files:  {0}", available - outOfDate);
-                Console.WriteLine("Out-of-date files: {0}", outOfDate);
             }
+
+            Console.WriteLine("Total files:       {0}", count);
+            Console.WriteLine("Available files:   {0}", available);
+            Console.WriteLine("Up-to-date files:  {0}", available - outOfDate);
+            Console.WriteLine("Out-of-date files: {0}", outOfDate);
         }
 
         static private void ListFiles(String fileName)
         {
-            using (FileDatabase fileDatabase = new FileDatabase(fileName))
+            var fileDatabase = new FileDatabase(fileName);
+
+            int count = fileDatabase.GetFileCount();
+            Console.WriteLine("{0} files in database:", count);
+            Console.WriteLine();
+
+            for (var i = 0; i < count; i++)
             {
-                int count = fileDatabase.GetFileCount();
-                Console.WriteLine("{0} files in database:", count);
+                var fileDatabaseRecord = fileDatabase.GetFile(i);
+
+                Console.WriteLine("Url:       {0}", fileDatabaseRecord.Url);
+                Console.WriteLine("FileName:  {0}", fileDatabaseRecord.FileName);
+                Console.WriteLine("Modified:  {0}", fileDatabaseRecord.Modified);
+                Console.WriteLine("Size:      {0}", fileDatabaseRecord.Size);
+                Console.WriteLine("Type:      {0}", fileDatabaseRecord.Type);
+                Console.WriteLine("Checksum:  {0}", fileDatabaseRecord.Checksum);
+                Console.WriteLine("Available: {0}", fileDatabaseRecord.Available);
+                Console.WriteLine("OutOfDate: {0}", fileDatabaseRecord.OutOfDate);
                 Console.WriteLine();
-
-                for (var i = 0; i < count; i++)
-                {
-                    var fileDatabaseRecord = fileDatabase.GetFile(i);
-
-                    Console.WriteLine("Url:       {0}", fileDatabaseRecord.Url);
-                    Console.WriteLine("FileName:  {0}", fileDatabaseRecord.FileName);
-                    Console.WriteLine("Modified:  {0}", fileDatabaseRecord.Modified);
-                    Console.WriteLine("Size:      {0}", fileDatabaseRecord.Size);
-                    Console.WriteLine("Type:      {0}", fileDatabaseRecord.Type);
-                    Console.WriteLine("Checksum:  {0}", fileDatabaseRecord.Checksum);
-                    Console.WriteLine("Available: {0}", fileDatabaseRecord.Available);
-                    Console.WriteLine("OutOfDate: {0}", fileDatabaseRecord.OutOfDate);
-                    Console.WriteLine();
-                }
             }
         }
 
         static private void UpdateFiles(String fileName)
         {
-            using (FileDatabase fileDatabase = new FileDatabase(fileName))
+            var fileDatabase = new FileDatabase(fileName);
+
+            int count = fileDatabase.GetFileCount();
+
+            var webCrawler = new WebCrawler(Path.GetDirectoryName(fileName));
+
+            for (var i = 0; i < count; i++)
             {
-                int count = fileDatabase.GetFileCount();
+                var fileDatabaseRecord = fileDatabase.GetFile(i);
 
-                using (var webCrawler = new WebCrawler(Path.GetDirectoryName(fileName)))
+                if (!fileDatabaseRecord.Available || fileDatabaseRecord.OutOfDate)
                 {
-                    for (var i = 0; i < count; i++)
-                    {
-                        var fileDatabaseRecord = fileDatabase.GetFile(i);
-
-                        if (!fileDatabaseRecord.Available || fileDatabaseRecord.OutOfDate)
-                        {
-                            webCrawler.UpdateFile(fileDatabaseRecord.Url);
-                            break;
-                        }
-                    }
+                    webCrawler.UpdateFile(fileDatabaseRecord.Url);
+                    break;
                 }
             }
         }
