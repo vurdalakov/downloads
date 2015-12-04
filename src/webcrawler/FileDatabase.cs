@@ -103,8 +103,8 @@
         public Int64 Size { get; private set; }
         public String Type { get; private set; }
         public String Checksum { get; private set; }
-        public Boolean Available { get; private set; }
-        public Boolean OutOfDate { get; private set; }
+        public Boolean Available { get; set; }
+        public Boolean OutOfDate { get; set; }
 
         public FileDatabaseRecord(String url, String fileName)
             : this(url, fileName, new DateTime(1900,1,1,0,0,0), -1, "", "", false, false)

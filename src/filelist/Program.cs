@@ -19,7 +19,7 @@
                 return;
             }
 
-            var fileName = args[0];
+            var fileName = Path.GetFullPath(args[0]);
 
             switch (args[1].ToLower())
             {
@@ -29,15 +29,18 @@
                 case "-list":
                     ListFiles(fileName);
                     break;
+                case "-check":
+                    CheckFiles(fileName);
+                    break;
                 case "-update":
                     UpdateFiles(fileName);
                     break;
             }
         }
 
-        static private void PrintInfo(String fileName)
+        static private void PrintInfo(String databaseFileName)
         {
-            var fileDatabase = new FileDatabase(fileName);
+            var fileDatabase = new FileDatabase(databaseFileName);
 
             int count = fileDatabase.GetFileCount();
             int available = 0;
@@ -64,9 +67,9 @@
             Console.WriteLine("Out-of-date files: {0}", outOfDate);
         }
 
-        static private void ListFiles(String fileName)
+        static private void ListFiles(String databaseFileName)
         {
-            var fileDatabase = new FileDatabase(fileName);
+            var fileDatabase = new FileDatabase(databaseFileName);
 
             int count = fileDatabase.GetFileCount();
             Console.WriteLine("{0} files in database:", count);
@@ -88,13 +91,46 @@
             }
         }
 
-        static private void UpdateFiles(String fileName)
+        static private void CheckFiles(String databaseFileName)
         {
-            var fileDatabase = new FileDatabase(fileName);
+            var fileDatabase = new FileDatabase(databaseFileName);
 
             int count = fileDatabase.GetFileCount();
 
-            var webCrawler = new WebCrawler(Path.GetDirectoryName(fileName));
+            var baseDirectory = Path.GetDirectoryName(databaseFileName);
+            var webCrawler = new WebCrawler(baseDirectory);
+
+            for (var i = 0; i < count; i++)
+            {
+                var fileDatabaseRecord = fileDatabase.GetFile(i);
+
+                if (fileDatabaseRecord.Size < 0)
+                {
+                    var webHeaders = webCrawler.DownloadHeaders(fileDatabaseRecord.Url);
+                    fileDatabaseRecord.Modify(webHeaders.LastModified, webHeaders.ContentLength, webHeaders.ContentType, "", false, false);
+                }
+
+                var fileName = Path.Combine(baseDirectory, fileDatabaseRecord.FileName);
+                var fileInfo = new FileInfo(fileName);
+
+                if (fileInfo.Exists)
+                {
+                    fileDatabaseRecord.Available = true;
+                    fileDatabaseRecord.OutOfDate = (fileInfo.Length != fileDatabaseRecord.Size) ||
+                        (fileInfo.LastWriteTime != fileDatabaseRecord.Modified);
+                }
+
+                fileDatabase.AddOrReplaceFile(fileDatabaseRecord);
+            }
+        }
+
+        static private void UpdateFiles(String databaseFileName)
+        {
+            var fileDatabase = new FileDatabase(databaseFileName);
+
+            int count = fileDatabase.GetFileCount();
+
+            var webCrawler = new WebCrawler(Path.GetDirectoryName(databaseFileName));
 
             for (var i = 0; i < count; i++)
             {
@@ -103,7 +139,6 @@
                 if (!fileDatabaseRecord.Available || fileDatabaseRecord.OutOfDate)
                 {
                     webCrawler.UpdateFile(fileDatabaseRecord.Url);
-                    break;
                 }
             }
         }
