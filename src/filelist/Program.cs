@@ -1,6 +1,7 @@
 ﻿namespace Vurdalakov
 {
     using System;
+    using System.IO;
 
     // System.Data.SQLite is an ADO.NET provider for SQLite.
     // http://system.data.sqlite.org/
@@ -27,6 +28,9 @@
                     break;
                 case "-list":
                     ListFiles(fileName);
+                    break;
+                case "-update":
+                    UpdateFiles(fileName);
                     break;
             }
         }
@@ -82,6 +86,28 @@
                     Console.WriteLine("Available: {0}", fileDatabaseRecord.Available);
                     Console.WriteLine("OutOfDate: {0}", fileDatabaseRecord.OutOfDate);
                     Console.WriteLine();
+                }
+            }
+        }
+
+        static private void UpdateFiles(String fileName)
+        {
+            using (FileDatabase fileDatabase = new FileDatabase(fileName))
+            {
+                int count = fileDatabase.GetFileCount();
+
+                using (var webCrawler = new WebCrawler(Path.GetDirectoryName(fileName)))
+                {
+                    for (var i = 0; i < count; i++)
+                    {
+                        var fileDatabaseRecord = fileDatabase.GetFile(i);
+
+                        if (!fileDatabaseRecord.Available || fileDatabaseRecord.OutOfDate)
+                        {
+                            webCrawler.UpdateFile(fileDatabaseRecord.Url);
+                            break;
+                        }
+                    }
                 }
             }
         }

@@ -8,12 +8,18 @@
     public class WebCrawler : WebDownloader, IDisposable
     {
         FileDatabase _fileDatabase;
+        String _baseDirectory;
+        String _tempDirectory;
 
         public WebCrawler(String baseDirectory = null, Int32 minDelay = 1000, Int32 maxDelay = 3000) : base(baseDirectory, minDelay, maxDelay)
         {
-            EnsureDirectoryExists(baseDirectory);
+            _baseDirectory = baseDirectory;
+            EnsureDirectoryExists(_baseDirectory);
 
-            var fileName = Path.Combine(baseDirectory, "_files.sqlite");
+            _tempDirectory = Path.Combine(_baseDirectory, "_temp");
+            EnsureDirectoryExists(_tempDirectory);
+
+            var fileName = Path.Combine(_baseDirectory, "_files.sqlite");
             _fileDatabase = new FileDatabase(fileName);
         }
 
@@ -56,6 +62,30 @@
                 fileRecord = new FileDatabaseRecord(url, fileName, httpHeaders.LastModified, httpHeaders.ContentLength, httpHeaders.ContentType);
             }
 
+            _fileDatabase.AddOrReplaceFile(fileRecord);
+        }
+
+        public void UpdateFile(String url)
+        {
+            Tracer.Trace("Updating '{0}'", url);
+
+            var fileRecord = _fileDatabase.GetFile(url);
+            if (null == fileRecord)
+            {
+                throw new Exception("Not in database");
+            }
+
+            var tempFileName = Path.Combine(_tempDirectory, fileRecord.FileName.Replace('\\', '_'));
+
+            //DownloadFile(url, tempFileName);
+
+            //var fileName = Path.Combine(_baseDirectory, fileRecord.FileName);
+            //EnsureDirectoryExists(Path.GetDirectoryName(fileName));
+
+            //File.Move(tempFileName, fileName);
+
+            fileRecord.Available = true;
+            fileRecord.OutOfDate = false;
             _fileDatabase.AddOrReplaceFile(fileRecord);
         }
 

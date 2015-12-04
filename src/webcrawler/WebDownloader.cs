@@ -116,6 +116,11 @@
             return encoding.GetString(buffer, bom.Length, buffer.Length - bom.Length);
         }
 
+        public void DownloadFile(String url, String fileName)
+        {
+            _webClient.DownloadFile(url, fileName);
+        }
+
         private String UrlToCacheFileName(String url)
         {
             //url = Uri.EscapeDataString(url);

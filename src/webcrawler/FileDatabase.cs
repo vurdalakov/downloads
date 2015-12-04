@@ -13,16 +13,16 @@
 
         public FileDatabase(String fileName)
         {
-            var connectionString = "Data Source=" + fileName + ";Pooling=true;FailIfMissing=false";
+            var connectionString = "Data Source=" + fileName;
 
             if (!System.IO.File.Exists(fileName))
             {
                 SQLiteConnection.CreateFile(fileName);
 
-                using (var sqlite = new SQLiteConnection(connectionString))
+                using (var connection = new SQLiteConnection(connectionString))
                 {
-                    sqlite.Open();
-                    using (var command = new SQLiteCommand("CREATE TABLE files (url TEXT PRIMARY KEY, filename TEXT, modified TEXT, size INTEGER, type TEXT, checksum TEXT, available INTEGER, outofdate INTEGER)", _connection))
+                    connection.Open();
+                    using (var command = new SQLiteCommand("CREATE TABLE files (url TEXT PRIMARY KEY, filename TEXT, modified TEXT, size INTEGER, type TEXT, checksum TEXT, available INTEGER, outofdate INTEGER)", connection))
                     {
                         command.ExecuteNonQuery();
                     }
@@ -117,7 +117,7 @@
         public Int64 Size { get; private set; }
         public String Type { get; private set; }
         public String Checksum { get; private set; }
-        public Boolean Available { get; private set; }
+        public Boolean Available { get; set; }
         public Boolean OutOfDate { get; set; }
 
         public FileDatabaseRecord(String url, String fileName, DateTime modified, Int64 size, String type, String checksum = "", Boolean available = false, Boolean outOfDate = false)
