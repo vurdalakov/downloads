@@ -6,7 +6,8 @@
     {
         static void Main(string[] args)
         {
-            var directoryName = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\personal\gazeta\sovsib");
+            //var directoryName = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\personal\gazeta\sovsib");
+            var directoryName = @"D:\gazeta\sovsib";
 
             var webCrawler = new WebCrawler(directoryName);
 

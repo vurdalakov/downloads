@@ -72,6 +72,11 @@
             var fileName = Path.Combine(_baseDirectory, fileRecord.FileName);
             EnsureDirectoryExists(Path.GetDirectoryName(fileName));
 
+            if (File.Exists(fileName))
+            {
+                File.Delete(fileName);
+            }
+
             File.Move(tempFileName, fileName);
             File.SetLastWriteTimeUtc(fileName, webHeaders.LastModified);
 
