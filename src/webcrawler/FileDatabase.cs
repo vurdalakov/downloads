@@ -72,6 +72,11 @@
             return GetFileEx("", String.Format("OFFSET {0}", index));
         }
 
+        public FileDatabaseRecord GetNextNotAvailableOrOutOfDateFile()
+        {
+            return GetFileEx("WHERE available=0 OR outofdate=1", "");
+        }
+
         private FileDatabaseRecord GetFileEx(String whereClause, String offsetClause)
         {
             var commandText = "SELECT url, filename, modified, size, type, checksum, available, outofdate FROM files " + whereClause + " LIMIT 1 " + offsetClause;

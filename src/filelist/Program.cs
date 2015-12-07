@@ -128,18 +128,17 @@
         {
             var fileDatabase = new FileDatabase(databaseFileName);
 
-            int count = fileDatabase.GetFileCount();
-
             var webCrawler = new WebCrawler(Path.GetDirectoryName(databaseFileName));
 
-            for (var i = 0; i < count; i++)
+            while (true)
             {
-                var fileDatabaseRecord = fileDatabase.GetFile(i);
-
-                if (!fileDatabaseRecord.Available || fileDatabaseRecord.OutOfDate)
+                var fileDatabaseRecord = fileDatabase.GetNextNotAvailableOrOutOfDateFile();
+                if (null == fileDatabaseRecord)
                 {
-                    webCrawler.UpdateFile(fileDatabaseRecord.Url);
+                    return;
                 }
+
+                webCrawler.UpdateFile(fileDatabaseRecord);
             }
         }
     }

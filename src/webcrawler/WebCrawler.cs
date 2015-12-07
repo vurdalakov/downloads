@@ -50,19 +50,24 @@
             _fileDatabase.AddOrReplaceFile(fileRecord);
         }
 
-        public void UpdateFile(String url)
+        public void UpdateFile(String url) // TODO: remove this overload?
         {
-            Tracer.Trace("Updating '{0}'", url);
-
             var fileRecord = _fileDatabase.GetFile(url);
             if (null == fileRecord)
             {
                 throw new Exception("Not in database");
             }
 
+            UpdateFile(fileRecord);
+        }
+
+        public void UpdateFile(FileDatabaseRecord fileRecord)
+        {
+            Tracer.Trace("Updating '{0}'", fileRecord.Url);
+
             var tempFileName = Path.Combine(_tempDirectory, fileRecord.FileName.Replace('\\', '_'));
 
-            var webHeaders = DownloadFile(url, tempFileName);
+            var webHeaders = DownloadFile(fileRecord.Url, tempFileName);
 
             if (webHeaders.ContentLength != new FileInfo(tempFileName).Length)
             {
