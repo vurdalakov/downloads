@@ -43,28 +43,13 @@
             var fileDatabase = new FileDatabase(databaseFileName);
 
             int count = fileDatabase.GetFileCount();
-            int available = 0;
-            int outOfDate = 0;
+            int available = fileDatabase.GetAvailableFileCount();
+            int outOfDate = fileDatabase.GetOutOfDateFileCount();
 
-            for (var i = 0; i < count; i++)
-            {
-                var fileDatabaseRecord = fileDatabase.GetFile(i);
-
-                if (fileDatabaseRecord.Available)
-                {
-                    available++;
-
-                    if (fileDatabaseRecord.OutOfDate)
-                    {
-                        outOfDate++;
-                    }
-                }
-            }
-
-            Console.WriteLine("Total files:       {0}", count);
-            Console.WriteLine("Available files:   {0}", available);
-            Console.WriteLine("Up-to-date files:  {0}", available - outOfDate);
-            Console.WriteLine("Out-of-date files: {0}", outOfDate);
+            Console.WriteLine("Total files:         {0}", count);
+            Console.WriteLine("Available files:     {0}", available);
+            Console.WriteLine("Out-of-date files:   {0}", outOfDate);
+            Console.WriteLine("Up-to-date files:    {0} ({1:N1}%)", available - outOfDate, (available - outOfDate) * 100 / count);
         }
 
         static private void ListFiles(String databaseFileName)

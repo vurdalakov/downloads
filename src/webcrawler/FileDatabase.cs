@@ -32,7 +32,22 @@
 
         public Int32 GetFileCount()
         {
-            var commandText = String.Format("SELECT COUNT(*) FROM files");
+            return GetFileCount("");
+        }
+
+        public Int32 GetAvailableFileCount()
+        {
+            return GetFileCount("WHERE available=1");
+        }
+
+        public Int32 GetOutOfDateFileCount()
+        {
+            return GetFileCount("WHERE outofdate=1");
+        }
+
+        private Int32 GetFileCount(String whereClause)
+        {
+            var commandText = String.Format("SELECT COUNT(*) FROM files " + whereClause);
 
             using (var connection = new SQLiteConnection(_connectionString))
             {
