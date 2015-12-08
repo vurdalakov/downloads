@@ -49,7 +49,7 @@
             Console.WriteLine("Total files:         {0}", count);
             Console.WriteLine("Available files:     {0}", available);
             Console.WriteLine("Out-of-date files:   {0}", outOfDate);
-            Console.WriteLine("Up-to-date files:    {0} ({1:N1}%)", available - outOfDate, (available - outOfDate) * 100 / count);
+            Console.WriteLine("Up-to-date files:    {0} ({1:N1}%)", available - outOfDate, (available - outOfDate) * 100.0 / count);
         }
 
         static private void ListFiles(String databaseFileName)

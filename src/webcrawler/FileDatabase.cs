@@ -94,7 +94,7 @@
 
         private FileDatabaseRecord GetFileEx(String whereClause, String offsetClause)
         {
-            var commandText = "SELECT url, filename, modified, size, type, checksum, available, outofdate FROM files " + whereClause + " LIMIT 1 " + offsetClause;
+            var commandText = "SELECT url, filename, modified, size, type, checksum, available, outofdate FROM files " + whereClause + " ORDER BY filename ASC LIMIT 1 " + offsetClause;
 
             using (var connection = new SQLiteConnection(_connectionString))
             {
