@@ -23,22 +23,32 @@
             _fileDatabase = new FileDatabase(fileName);
         }
 
+        public String Parse(String text, String pattern)
+        {
+            var match = Regex.Match(text, pattern);
+
+            return (2 == match.Groups.Count) ? match.Groups[1].Value : null;
+        }
+
+        public String[] ParseAll(String text, String pattern)
+        {
+            var matches = Regex.Matches(text, pattern);
+
+            return matches.Cast<Match>().Select(m => m.Groups[1].Value).ToArray();
+        }
+
         public String Extract(String url, String pattern)
         {
             var html = this.DownloadString(url);
 
-            var match = Regex.Match(html, pattern);
-
-            return (2 == match.Groups.Count) ? match.Groups[1].Value : null;
+            return Parse(html, pattern);
         }
 
         public String[] ExtractAll(String url, String pattern)
         {
             var html = this.DownloadString(url);
 
-            var matches = Regex.Matches(html, pattern);
-
-            return matches.Cast<Match>().Select(m => m.Groups[1].Value).ToArray();
+            return ParseAll(html, pattern);
         }
 
         public void AddFile(String url, String fileName)
